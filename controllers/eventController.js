@@ -3,11 +3,21 @@ const Event = require("../models/eventModel"); //Model dari schema event
 // Get All Events
 exports.getEvents = async (req, res) => {
   try {
-    const events = await Event.find();
+    const { title, location, date } = req.query;
+    let queryObj = {};
+    if (title) {
+      queryObj.title = { $regex: title, $options: "i" };
+    }
+    if (location) {
+      queryObj.location = { $regex: location, $options: "i" };
+    }
+    if (date) {
+      queryObj.date = date;
+    }
+    const events = await Event.find(queryObj);
     if (events.length === 0) {
       return res.status(404).json({ message: "data belum ada" });
     }
-
     res.status(200).json({
       count: events.length,
       data: events,
@@ -16,6 +26,7 @@ exports.getEvents = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Get Single Event
 exports.getEventById = async (req, res) => {
@@ -66,7 +77,7 @@ exports.updateEvent = async (req, res) => {
         seats,
         date,
       },
-      { new: true},
+      { new: true },
     );
     if (!editEvent) {
       return res.status(404).json({ message: "data tidak ditemukan" });
@@ -91,4 +102,3 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json(error.message);
   }
 };
-
